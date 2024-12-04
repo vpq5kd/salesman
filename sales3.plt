@@ -11,7 +11,7 @@ set style line 1 lc rgb 'gray' lt 1 lw 1
 # use range [-180:180][-90:90] to plot the whole globe
 #
 # plot world map and various city locations as an 'x'
-plot [-170:-60][10:70] "world.dat" with filledcu ls 1, \
+plot [-180:-60][10:70] "world.dat" with filledcu ls 1, \
 "cities3.dat" using 1:2 with linespoints lw 2 lc 7
 
 
