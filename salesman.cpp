@@ -3,6 +3,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
+#include <random>
 
 using namespace std;
 // simple structure to store city coordinates
@@ -12,6 +13,13 @@ using namespace std;
 typedef struct {
   double lon, lat;
 } COORD;
+
+//random number generator device
+mt19937 gen(random_device{}());
+int randInt(int a, int b){
+	uniform_int_distribution <> d(a,b);
+	return d(gen);
+}
 
 // fill the array of city locations
 int GetData(char* fname, COORD *cities){
@@ -49,6 +57,7 @@ double computeDistance(double lat1, double lon1, double lat2, double lon2){
 	return d;
 }
 
+
 //function that computes total distance of an array of cities
 double totalDistance(const COORD cities[], int ncities){
 	double totalRouteDistance = 0.0;
@@ -63,6 +72,15 @@ double totalDistance(const COORD cities[], int ncities){
 	return totalRouteDistance;
 }
 
+//function to swap two cities (used for melting)
+void randCitySwap(COORD cities [], int ncity){
+	int randCity1 = randInt(0,ncity-1);
+	int randCity2 = randInt(0,ncity-1);
+	while (randCity2 == randCity1){
+		randCity2 = randInt(0, ncity-1);
+	}
+	swap(cities[randCity1], cities[randCity2]);
+}
 
 int main(int argc, char *argv[]){
   const int NMAX=2500;
@@ -80,6 +98,12 @@ int main(int argc, char *argv[]){
     printf("%lf %lf\n",	cities[i].lon,cities[i].lat);
   double totalRouteDistance = totalDistance(cities, ncity); 
   printf("total distance of current route = %lf \n", totalRouteDistance);
+  randCitySwap(cities, ncity);
+  for (int i=0; i<ncity; i++)
+    printf("%lf %lf\n",	cities[i].lon,cities[i].lat);
+  totalRouteDistance = totalDistance(cities, ncity); 
+  printf("total distance of new route = %lf \n", totalRouteDistance);
+  
   return 0;
 }
 
