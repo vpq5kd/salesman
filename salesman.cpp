@@ -82,6 +82,44 @@ void randCitySwap(COORD cities [], int ncity){
 	swap(cities[randCity1], cities[randCity2]);
 }
 
+void melt(COORD cities [], int ncity, double T0, double numIterations){
+
+	double oldDist = 0.0;
+	double newDist = 0.0; 
+	for (int i = 0; i<numIterations+1; i++){
+		if (i == 0){
+			oldDist = totalDistance(cities, ncity);
+		}
+		int randCity1 = randInt(0,ncity-1);
+		int randCity2 = randInt(0,ncity-1);
+		while (randCity2 == randCity1){
+			randCity2 = randInt(0, ncity-1);
+		}
+		swap(cities[randCity1], cities[randCity2]);
+
+		newDist = totalDistance(cities, ncity);
+
+		double deltaDist = newDist - oldDist;
+		
+		if (deltaDist < 0){
+			oldDist = newDist;
+			continue;
+		}
+		else {
+			double p = exp(-deltaDist/T0);
+			double r = rand01();
+
+			if (r < p){
+				oldDist = newDist;
+				continue;
+			}
+			swap(cities[randCity1], cities[randCity2]);
+		
+		}
+
+	}
+}
+
 int main(int argc, char *argv[]){
   const int NMAX=2500;
   COORD cities[NMAX];
