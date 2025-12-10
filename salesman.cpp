@@ -33,8 +33,8 @@ int GetData(char* fname, COORD *cities){
 
 
 //computes great circle distance between two points  using the haversine formula
-double computeDistance(double lat1, double lon1, double lat2, doulbe lon2){
-	double R = 6371.0
+double computeDistance(double lat1, double lon1, double lat2, double lon2){
+	double R = 6371.0;
 	double phi1 = lat1 * M_PI/180.0;
 	double phi2 = lat2 * M_PI/180.0;
 	double lam1 = lon1 * M_PI/180.0;
@@ -49,6 +49,21 @@ double computeDistance(double lat1, double lon1, double lat2, doulbe lon2){
 	return d;
 }
 
+//function that computes total distance of an array of cities
+double totalDistance(const COORD cities[], int ncities){
+	double totalRouteDistance = 0.0;
+	for (int i = 0; i<ncities-1; i++){
+		double lat1 = cities[i].lat;
+		double lon1 = cities[i].lon;
+		double lat2 = cities[i+1].lat;
+		double lon2 = cities[i+1].lon;
+		double localDistance = computeDistance(lat1, lon1, lat2, lon2);
+		totalRouteDistance += localDistance;
+	}
+	return totalRouteDistance;
+}
+
+
 int main(int argc, char *argv[]){
   const int NMAX=2500;
   COORD cities[NMAX];
@@ -62,7 +77,9 @@ int main(int argc, char *argv[]){
   printf("Read %d cities from data file\n",ncity);
   printf("Longitude  Latitude\n");
   for (int i=0; i<ncity; i++)
-    printf("%lf %lf\n",	cities[i].lon,cities[i].lat); 
+    printf("%lf %lf\n",	cities[i].lon,cities[i].lat);
+  double totalRouteDistance = totalDistance(cities, ncity); 
+  printf("total distance of current route = %lf \n", totalRouteDistance);
   return 0;
 }
 
