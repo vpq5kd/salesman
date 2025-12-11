@@ -73,7 +73,15 @@ double totalDistance(const COORD cities[], int ncities){
 		double localDistance = computeDistance(lat1, lon1, lat2, lon2);
 		totalRouteDistance += localDistance;
 	}
-	return totalRouteDistance;
+
+	double latStart = cities[0].lat;
+	double lonStart = cities[0].lon;
+	double latEnd = cities[ncities-1].lat;
+	double lonEnd = cities[ncities-1].lon;
+	double retDistance = computeDistance(latStart, lonStart, latEnd, lonEnd);
+	totalRouteDistance+= retDistance;
+
+	return totalRouteDistance ;
 }
 
 //function to swap two cities (used for melting)
