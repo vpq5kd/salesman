@@ -20,7 +20,7 @@ int randInt(int a, int b){
 	uniform_int_distribution <> d(a,b);
 	return d(gen);
 }
-int randDouble(double a, double b){
+double randDouble(double a, double b){
 	uniform_real_distribution <> d(a,b);
 	return d(gen);
 }
@@ -91,7 +91,7 @@ void melt(COORD cities [], int ncity, double T0, double numIterations){
 
 	double oldDist = totalDistance(cities, ncity);
 	double newDist = 0.0; 
-	for (int i = 0; i<numIterations+1; i++){
+	for (int i = 0; i<numIterations; i++){
 		
 		int randCity1 = randInt(0,ncity-1);
 		int randCity2 = randInt(0,ncity-1);
@@ -123,47 +123,47 @@ void melt(COORD cities [], int ncity, double T0, double numIterations){
 	}
 }
 
-void simulatedAnnealing(COORD cities [], int ncity, double T0){
+void simulatedAnnealing(COORD cities [], int ncity, double T0, double numIterations){
 	double T = T0;
 	double oldDist = totalDistance(cities, ncity);
 	double newDist = 0.0;
 	while(T>0){
-		int randCity1 = randInt(0,ncity-1);
-		int randCity2 = randInt(0,ncity-1);
-		while (randCity2 == randCity1){
-			randCity2 = randInt(0, ncity-1);
-		}
-		swap(cities[randCity1], cities[randCity2]);
+		for (int i = 0; i < numIterations; i++){
+			int randCity1 = randInt(0,ncity-1);
+			int randCity2 = randInt(0,ncity-1);
+			while (randCity2 == randCity1){
+				randCity2 = randInt(0, ncity-1);
+			}
+			swap(cities[randCity1], cities[randCity2]);
 
-		newDist = totalDistance(cities, ncity);
+			newDist = totalDistance(cities, ncity);
 
-		double deltaDist = newDist - oldDist;
-		
-		if (deltaDist < 0){
-			oldDist = newDist;
-			T-=10.0;
-			continue;
-		}
-		else {
-			double p = exp(-deltaDist/T0);
-			double r = randDouble(0.0,1.0);
-
-			if (r < p){
+			double deltaDist = newDist - oldDist;
+			
+			if (deltaDist < 0){
 				oldDist = newDist;
-				T-=10.0;
 				continue;
 			}
-			T-=10.0;
-			swap(cities[randCity1], cities[randCity2]);
-		
-		}	
+			else {
+				double p = exp(-deltaDist/T);
+				double r = randDouble(0.0,1.0);
+
+				if (r < p){
+					oldDist = newDist;
+					continue;
+				}
+				swap(cities[randCity1], cities[randCity2]);
+			
+			}
+		}
+		T-= 0.1;	
 	}
 }
 //print function mainly used for debugging
 void printCityStats(COORD cities [], int ncity){
-  printf("Longitude  Latitude\n");
-  for (int i=0; i<ncity; i++)
-    printf("%lf %lf\n",	cities[i].lon,cities[i].lat);
+  //printf("Longitude  Latitude\n");
+  //for (int i=0; i<ncity; i++)
+    //printf("%lf %lf\n",	cities[i].lon,cities[i].lat);
   double totalRouteDistance = totalDistance(cities, ncity); 
   printf("total distance of current route = %lf \n", totalRouteDistance);
   
@@ -179,12 +179,13 @@ int main(int argc, char *argv[]){
   }
 
   double T0 = atoi(argv[2]); //second argument value is the initial temperature
+  double numIterations = atoi(argv[3]); //third argument value is the number of iterations per temperature step.
   int ncity=GetData(argv[1],cities);
   printf("Read %d cities from data file\n",ncity);
   printCityStats(cities, ncity);
   melt(cities, ncity, T0, 100);
   printCityStats(cities, ncity);
-  simulatedAnnealing(cities, ncity, T0);
+  simulatedAnnealing(cities, ncity, T0, numIterations);
   printCityStats(cities, ncity);
   return 0;
 }
