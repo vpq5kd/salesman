@@ -4,6 +4,9 @@
 #include <cstdlib>
 #include <cmath>
 #include <random>
+#include <fstream>
+#include <cstring>
+#include <algorithm>
 
 using namespace std;
 // simple structure to store city coordinates
@@ -131,7 +134,7 @@ void melt(COORD cities [], int ncity, double T0, double numIterations){
 	}
 }
 
-void simulatedAnnealing(COORD cities [], int ncity, double T0, double numIterations){
+void simulatedAnnealingCitySwap(COORD cities [], int ncity, double T0, double numIterations){
 	double T = T0;
 	double oldDist = totalDistance(cities, ncity);
 	double newDist = 0.0;
@@ -167,6 +170,40 @@ void simulatedAnnealing(COORD cities [], int ncity, double T0, double numIterati
 		T-= 0.1;	
 	}
 }
+
+void simulatedAnnealingTwoOpt(COORD cities [], int ncity, double T0, double numIterations){
+	double T = T0;
+	double oldDist = totalDistance(cities, ncity);
+	double newDist = 0.0;
+	while(T>0){
+		for (int i = 0; i < numIterations; i++){
+			int randCity1 = randInt(0,ncity-3);
+			int randCity2 = randInt(randCity1+2,ncity-1);
+			reverse(cities + randCity1 + 1, cities + randCity2 +2);
+
+			newDist = totalDistance(cities, ncity);
+
+			double deltaDist = newDist - oldDist;
+			
+			if (deltaDist < 0){
+				oldDist = newDist;
+				continue;
+			}
+			else {
+				double p = exp(-deltaDist/T);
+				double r = randDouble(0.0,1.0);
+
+				if (r < p){
+					oldDist = newDist;
+					continue;
+				}
+				reverse(cities + randCity1 + 1, cities + randCity2 +2);
+
+			}
+		}
+		T-= 0.1;	
+	}
+}
 //print function mainly used for debugging
 void printCityStats(COORD cities [], int ncity){
   //printf("Longitude  Latitude\n");
@@ -175,6 +212,15 @@ void printCityStats(COORD cities [], int ncity){
   double totalRouteDistance = totalDistance(cities, ncity); 
   printf("total distance of current route = %lf \n", totalRouteDistance);
   
+}
+
+void writeRoute(const char * filename, const COORD cities [], int ncity){
+	ofstream out(filename);
+	for (int i = 0; i<ncity; i++){
+		out << cities[i].lon << " " << cities[i].lat << "\n";
+	}
+	out.close();
+	printf("saved final route to %s\n", filename);
 }
 
 int main(int argc, char *argv[]){
@@ -191,10 +237,20 @@ int main(int argc, char *argv[]){
   int ncity=GetData(argv[1],cities);
   printf("Read %d cities from data file\n",ncity);
   printCityStats(cities, ncity);
-  melt(cities, ncity, T0, 100);
+  melt(cities, ncity, T0, 1000);
   printCityStats(cities, ncity);
-  simulatedAnnealing(cities, ncity, T0, numIterations);
+
+  if (argc==5 && strcmp(argv[4], "CitySwap")){
+  	 simulatedAnnealingCitySwap(cities, ncity, T0, numIterations);
+  }
+  else {
+  	simulatedAnnealingTwoOpt(cities, ncity, T0, numIterations);
+  }
   printCityStats(cities, ncity);
+ 
+  string filename = "cities" + to_string(ncity) + "_optimal.dat";  
+  writeRoute(filename.c_str(), cities, ncity);
+
   return 0;
 }
 
