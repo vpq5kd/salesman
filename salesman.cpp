@@ -171,39 +171,7 @@ void simulatedAnnealingCitySwap(COORD cities [], int ncity, double T0, double nu
 	}
 }
 
-void simulatedAnnealingTwoOpt(COORD cities [], int ncity, double T0, double numIterations){
-	double T = T0;
-	double oldDist = totalDistance(cities, ncity);
-	double newDist = 0.0;
-	while(T>0){
-		for (int i = 0; i < numIterations; i++){
-			int randCity1 = randInt(0,ncity-3);
-			int randCity2 = randInt(randCity1+2,ncity-1);
-			reverse(cities + randCity1 + 1, cities + randCity2 +2);
 
-			newDist = totalDistance(cities, ncity);
-
-			double deltaDist = newDist - oldDist;
-			
-			if (deltaDist < 0){
-				oldDist = newDist;
-				continue;
-			}
-			else {
-				double p = exp(-deltaDist/T);
-				double r = randDouble(0.0,1.0);
-
-				if (r < p){
-					oldDist = newDist;
-					continue;
-				}
-				reverse(cities + randCity1 + 1, cities + randCity2 +2);
-
-			}
-		}
-		T-= 0.1;	
-	}
-}
 //print function mainly used for debugging
 void printCityStats(COORD cities [], int ncity){
   //printf("Longitude  Latitude\n");
@@ -239,13 +207,7 @@ int main(int argc, char *argv[]){
   printCityStats(cities, ncity);
   melt(cities, ncity, T0, 1000);
   printCityStats(cities, ncity);
-
-  if (argc==5 && strcmp(argv[4], "CitySwap")){
-  	 simulatedAnnealingCitySwap(cities, ncity, T0, numIterations);
-  }
-  else {
-  	simulatedAnnealingTwoOpt(cities, ncity, T0, numIterations);
-  }
+  simulatedAnnealingCitySwap(cities, ncity, T0, numIterations);
   printCityStats(cities, ncity);
  
   string filename = "cities" + to_string(ncity) + "_optimal.dat";  
