@@ -20,6 +20,10 @@ int randInt(int a, int b){
 	uniform_int_distribution <> d(a,b);
 	return d(gen);
 }
+int randDouble(double a, double b){
+	uniform_real_distribution <> d(a,b);
+	return d(gen);
+}
 
 // fill the array of city locations
 int GetData(char* fname, COORD *cities){
@@ -82,14 +86,13 @@ void randCitySwap(COORD cities [], int ncity){
 	swap(cities[randCity1], cities[randCity2]);
 }
 
+//melt function
 void melt(COORD cities [], int ncity, double T0, double numIterations){
 
-	double oldDist = 0.0;
+	double oldDist = totalDistance(cities, ncity);
 	double newDist = 0.0; 
 	for (int i = 0; i<numIterations+1; i++){
-		if (i == 0){
-			oldDist = totalDistance(cities, ncity);
-		}
+		
 		int randCity1 = randInt(0,ncity-1);
 		int randCity2 = randInt(0,ncity-1);
 		while (randCity2 == randCity1){
@@ -107,7 +110,7 @@ void melt(COORD cities [], int ncity, double T0, double numIterations){
 		}
 		else {
 			double p = exp(-deltaDist/T0);
-			double r = rand01();
+			double r = randDouble(0.0,1.0);
 
 			if (r < p){
 				oldDist = newDist;
@@ -120,6 +123,52 @@ void melt(COORD cities [], int ncity, double T0, double numIterations){
 	}
 }
 
+void simulatedAnnealing(COORD cities [], int ncity, double T0){
+	double T = T0;
+	double oldDist = totalDistance(cities, ncity);
+	double newDist = 0.0;
+	while(T>0){
+		int randCity1 = randInt(0,ncity-1);
+		int randCity2 = randInt(0,ncity-1);
+		while (randCity2 == randCity1){
+			randCity2 = randInt(0, ncity-1);
+		}
+		swap(cities[randCity1], cities[randCity2]);
+
+		newDist = totalDistance(cities, ncity);
+
+		double deltaDist = newDist - oldDist;
+		
+		if (deltaDist < 0){
+			oldDist = newDist;
+			T-=10.0;
+			continue;
+		}
+		else {
+			double p = exp(-deltaDist/T0);
+			double r = randDouble(0.0,1.0);
+
+			if (r < p){
+				oldDist = newDist;
+				T-=10.0;
+				continue;
+			}
+			T-=10.0;
+			swap(cities[randCity1], cities[randCity2]);
+		
+		}	
+	}
+}
+//print function mainly used for debugging
+void printCityStats(COORD cities [], int ncity){
+  printf("Longitude  Latitude\n");
+  for (int i=0; i<ncity; i++)
+    printf("%lf %lf\n",	cities[i].lon,cities[i].lat);
+  double totalRouteDistance = totalDistance(cities, ncity); 
+  printf("total distance of current route = %lf \n", totalRouteDistance);
+  
+}
+
 int main(int argc, char *argv[]){
   const int NMAX=2500;
   COORD cities[NMAX];
@@ -129,19 +178,14 @@ int main(int argc, char *argv[]){
     return 1;
   }
 
+  double T0 = atoi(argv[2]); //second argument value is the initial temperature
   int ncity=GetData(argv[1],cities);
   printf("Read %d cities from data file\n",ncity);
-  printf("Longitude  Latitude\n");
-  for (int i=0; i<ncity; i++)
-    printf("%lf %lf\n",	cities[i].lon,cities[i].lat);
-  double totalRouteDistance = totalDistance(cities, ncity); 
-  printf("total distance of current route = %lf \n", totalRouteDistance);
-  randCitySwap(cities, ncity);
-  for (int i=0; i<ncity; i++)
-    printf("%lf %lf\n",	cities[i].lon,cities[i].lat);
-  totalRouteDistance = totalDistance(cities, ncity); 
-  printf("total distance of new route = %lf \n", totalRouteDistance);
-  
+  printCityStats(cities, ncity);
+  melt(cities, ncity, T0, 100);
+  printCityStats(cities, ncity);
+  simulatedAnnealing(cities, ncity, T0);
+  printCityStats(cities, ncity);
   return 0;
 }
 
