@@ -132,9 +132,11 @@ void melt(COORD cities [], int ncity, double T0, double numIterations){
 		}
 
 	}
+	printf("finished melting");
 }
 
 void simulatedAnnealingCitySwap(COORD cities [], int ncity, double T0, double numIterations){
+	printf("running city swap formula\n");
 	double T = T0;
 	double oldDist = totalDistance(cities, ncity);
 	double newDist = 0.0;
@@ -170,7 +172,38 @@ void simulatedAnnealingCitySwap(COORD cities [], int ncity, double T0, double nu
 		T-= 0.1;	
 	}
 }
+void simulatedAnnealingTwoOpt(COORD cities [], int ncity, double T0, double numIterations){
+	printf("running twoopt formula\n"); 
+	double T = T0;
+	double oldDist = totalDistance(cities, ncity);
+	double newDist = 0.0;
+	while(T>0){
+		for (int i = 0; i < numIterations; i++){
+			int randCity1 = randInt(1,ncity-3);
+			int randCity2 = randInt(randCity1 + 2,ncity-1);
+			reverse(cities + randCity1 + 1, cities + randCity2 + 1);
+			newDist = totalDistance(cities, ncity);
 
+			double deltaDist = newDist - oldDist;
+			
+			if (deltaDist < 0){
+				oldDist = newDist;
+				continue;
+			}
+			else {
+				double p = exp(-deltaDist/T);
+				double r = randDouble(0.0,1.0);
+
+				if (r < p){
+					oldDist = newDist;
+					continue;
+				}
+				reverse(cities + randCity1 + 1, cities + randCity2 + 1);	
+			}
+		}
+		T-= 0.1;	
+	}
+}
 
 //print function mainly used for debugging
 void printCityStats(COORD cities [], int ncity){
@@ -207,7 +240,14 @@ int main(int argc, char *argv[]){
   printCityStats(cities, ncity);
   melt(cities, ncity, T0, 1000);
   printCityStats(cities, ncity);
-  simulatedAnnealingCitySwap(cities, ncity, T0, numIterations);
+
+  if (argc == 5 && strcmp("TwoOpt", argv[4])){
+	simulatedAnnealingTwoOpt(cities, ncity, T0, numIterations);		  
+  }
+
+  else{ 
+  	simulatedAnnealingCitySwap(cities, ncity, T0, numIterations);
+  }
   printCityStats(cities, ncity);
  
   string filename = "cities" + to_string(ncity) + "_optimal.dat";  
