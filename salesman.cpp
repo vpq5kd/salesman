@@ -7,7 +7,7 @@
 #include <fstream>
 #include <cstring>
 #include <algorithm>
-
+#include <csignal>
 using namespace std;
 // simple structure to store city coordinates
 // could also use std::pair<double> 
@@ -17,15 +17,26 @@ typedef struct {
   double lon, lat;
 } COORD;
 
+//bool that defines when to exit
+bool killSwitch = false; 
+
 //random number generator device
 mt19937 gen(random_device{}());
 int randInt(int a, int b){
 	uniform_int_distribution <> d(a,b);
 	return d(gen);
 }
+
+
 double randDouble(double a, double b){
 	uniform_real_distribution <> d(a,b);
 	return d(gen);
+}
+
+//signal handler for interrupt exit
+void signalHandler(int sig){
+	printf("\nProgram will exit momentarily with the best solution found so far!\n");
+	killSwitch = true;
 }
 
 // fill the array of city locations
@@ -132,7 +143,7 @@ void melt(COORD cities [], int ncity, double T0, double numIterations){
 		}
 
 	}
-	printf("finished melting");
+	printf("finished melting\n");
 }
 
 void simulatedAnnealingCitySwap(COORD cities [], int ncity, double T0, double numIterations){
@@ -228,30 +239,62 @@ int main(int argc, char *argv[]){
   const int NMAX=2500;
   COORD cities[NMAX];
 
-  if (argc<2){
-    printf("Please provide a data file path as argument\n");
+  signal(SIGINT, signalHandler);
+
+  if (argc<5){
+    printf("You did not provide the appropriate argument. Usage is as follows: [files.dat] [T0] [# Internal Iterations] [target value] [(optional} TwoOpt]]\n");
     return 1;
   }
 
   double T0 = atoi(argv[2]); //second argument value is the initial temperature
   double numIterations = atoi(argv[3]); //third argument value is the number of iterations per temperature step.
+  double targetDistance = atoi(argv[4]); //fourth argument value is upper, non-inclusive, threshold for distance
+
   int ncity=GetData(argv[1],cities);
   printf("Read %d cities from data file\n",ncity);
   printCityStats(cities, ncity);
   melt(cities, ncity, T0, 1000);
   printCityStats(cities, ncity);
 
-  if (argc == 5 && strcmp("TwoOpt", argv[4])){
-	simulatedAnnealingTwoOpt(cities, ncity, T0, numIterations);		  
+  double bestDistance = 0.0;
+  COORD bestCity[ncity]; 
+  if (argc > 5 && strcmp("TwoOpt", argv[5])==0){
+	simulatedAnnealingTwoOpt(cities, ncity, T0, numIterations);
+	bestDistance = totalDistance(cities, ncity);
+	copy(cities, cities + ncity, bestCity);
+	while ((totalDistance(cities, ncity) > targetDistance)&& !killSwitch){
+		printf("target distance of %lf not reached, currecnt best distance = %lf\n", targetDistance, bestDistance);
+		simulatedAnnealingTwoOpt(cities, ncity, T0, numIterations);
+		double testDistance = totalDistance(cities, ncity);
+		printf("most recent calculated distance %lf\n", testDistance);
+		if (testDistance  < bestDistance){
+			bestDistance = testDistance;
+			copy(cities, cities + ncity, bestCity);
+		}	
+	}	
   }
 
   else{ 
-  	simulatedAnnealingCitySwap(cities, ncity, T0, numIterations);
+	simulatedAnnealingCitySwap(cities, ncity, T0, numIterations);
+	bestDistance = totalDistance(cities, ncity);
+	copy(cities, cities + ncity, bestCity);
+	while ((totalDistance(cities, ncity) > targetDistance)&& !killSwitch){
+		printf("target distance of %lf not reached, currecnt best distance = %lf\n", targetDistance, bestDistance);
+		simulatedAnnealingCitySwap(cities, ncity, T0, numIterations);
+		double testDistance = totalDistance(cities, ncity);
+		printf("most recent calculated distance %lf\n", testDistance);
+		if (testDistance  < bestDistance){
+			bestDistance = testDistance;
+			copy(cities, cities + ncity, bestCity);
+		}	
+	}	
+
   }
-  printCityStats(cities, ncity);
+
+  printCityStats(bestCity, ncity);
  
   string filename = "cities" + to_string(ncity) + "_optimal.dat";  
-  writeRoute(filename.c_str(), cities, ncity);
+  writeRoute(filename.c_str(), bestCity, ncity);
 
   return 0;
 }
