@@ -1,5 +1,8 @@
 // example code to read in a data file of city lat,long coordinates
 
+#include <string> 
+#include <stdio.h>
+#include <stdlib.h>
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
@@ -143,11 +146,12 @@ void melt(COORD cities [], int ncity, double T0, double numIterations){
 		}
 
 	}
-	printf("finished melting\n");
+	printf("Finished melting\n");
 }
 
+//smulated annealing logic using the method of swapping two random cities.
 void simulatedAnnealingCitySwap(COORD cities [], int ncity, double T0, double numIterations){
-	printf("running city swap formula\n");
+	printf("Running city swap formula\n");
 	double T = T0;
 	double oldDist = totalDistance(cities, ncity);
 	double newDist = 0.0;
@@ -183,8 +187,10 @@ void simulatedAnnealingCitySwap(COORD cities [], int ncity, double T0, double nu
 		T-= 0.1;	
 	}
 }
+
+//simulated annealing logic using the traditional two-opt method at random indeces.
 void simulatedAnnealingTwoOpt(COORD cities [], int ncity, double T0, double numIterations){
-	printf("running twoopt formula\n"); 
+	printf("Running twoopt formula\n"); 
 	double T = T0;
 	double oldDist = totalDistance(cities, ncity);
 	double newDist = 0.0;
@@ -216,23 +222,14 @@ void simulatedAnnealingTwoOpt(COORD cities [], int ncity, double T0, double numI
 	}
 }
 
-//print function mainly used for debugging
-void printCityStats(COORD cities [], int ncity){
-  //printf("Longitude  Latitude\n");
-  //for (int i=0; i<ncity; i++)
-    //printf("%lf %lf\n",	cities[i].lon,cities[i].lat);
-  double totalRouteDistance = totalDistance(cities, ncity); 
-  printf("total distance of current route = %lf \n", totalRouteDistance);
-  
-}
-
+//saves the route to an output file 
 void writeRoute(const char * filename, const COORD cities [], int ncity){
 	ofstream out(filename);
 	for (int i = 0; i<ncity; i++){
 		out << cities[i].lon << " " << cities[i].lat << "\n";
 	}
 	out.close();
-	printf("saved final route to %s\n", filename);
+	printf("Saved final route to %s\n", filename);
 }
 
 int main(int argc, char *argv[]){
@@ -242,19 +239,29 @@ int main(int argc, char *argv[]){
   signal(SIGINT, signalHandler);
 
   if (argc<5){
-    printf("You did not provide the appropriate argument. Usage is as follows: [files.dat] [T0] [# Internal Iterations] [target value] [(optional} TwoOpt]]\n");
+    printf("You did not provide the appropriate arguments. Usage is as follows: [files.dat] [T0] [# Internal Iterations] [target value] [(optional} TwoOpt]]\n");
     return 1;
   }
 
   double T0 = atoi(argv[2]); //second argument value is the initial temperature
   double numIterations = atoi(argv[3]); //third argument value is the number of iterations per temperature step.
   double targetDistance = atoi(argv[4]); //fourth argument value is upper, non-inclusive, threshold for distance
+  const char * algorithmType;
+
+  string citySwapVariableName = "City Swap";
+
+  if (argc > 5) {algorithmType = argv[5];} else {algorithmType = citySwapVariableName.c_str();}
+  
+
+  printf("You are running the %s algorithm with the following paramers:\nT0 = %d\nNumber of iterations per temperature = %d\nTarget distance = %d\n", algorithmType,(int) T0, (int) numIterations,(int) targetDistance);
 
   int ncity=GetData(argv[1],cities);
   printf("Read %d cities from data file\n",ncity);
-  printCityStats(cities, ncity);
+  printf("Distance of initially provided path: %lf\n", totalDistance(cities, ncity)); 
+
+
   melt(cities, ncity, T0, 1000);
-  printCityStats(cities, ncity);
+  printf("Distance of path after melting: %lf\n", totalDistance(cities, ncity));
 
   double bestDistance = 0.0;
   COORD bestCity[ncity]; 
@@ -263,10 +270,10 @@ int main(int argc, char *argv[]){
 	bestDistance = totalDistance(cities, ncity);
 	copy(cities, cities + ncity, bestCity);
 	while ((totalDistance(cities, ncity) > targetDistance)&& !killSwitch){
-		printf("target distance of %lf not reached, currecnt best distance = %lf\n", targetDistance, bestDistance);
+		printf("Target distance of %lf not reached, currecnt best distance = %lf\n", targetDistance, bestDistance);
 		simulatedAnnealingTwoOpt(cities, ncity, T0, numIterations);
 		double testDistance = totalDistance(cities, ncity);
-		printf("most recent calculated distance %lf\n", testDistance);
+		printf("Most recent calculated distance %lf\n", testDistance);
 		if (testDistance  < bestDistance){
 			bestDistance = testDistance;
 			copy(cities, cities + ncity, bestCity);
@@ -279,10 +286,10 @@ int main(int argc, char *argv[]){
 	bestDistance = totalDistance(cities, ncity);
 	copy(cities, cities + ncity, bestCity);
 	while ((totalDistance(cities, ncity) > targetDistance)&& !killSwitch){
-		printf("target distance of %lf not reached, currecnt best distance = %lf\n", targetDistance, bestDistance);
+		printf("Target distance of %lf not reached, currecnt best distance = %lf\n", targetDistance, bestDistance);
 		simulatedAnnealingCitySwap(cities, ncity, T0, numIterations);
 		double testDistance = totalDistance(cities, ncity);
-		printf("most recent calculated distance %lf\n", testDistance);
+		printf("Most recent calculated distance %lf\n", testDistance);
 		if (testDistance  < bestDistance){
 			bestDistance = testDistance;
 			copy(cities, cities + ncity, bestCity);
@@ -291,8 +298,8 @@ int main(int argc, char *argv[]){
 
   }
 
-  printCityStats(bestCity, ncity);
- 
+  printf("Final best distance found: %lf\n", bestDistance);
+
   string filename = "cities" + to_string(ncity) + "_optimal.dat";  
   writeRoute(filename.c_str(), bestCity, ncity);
 
