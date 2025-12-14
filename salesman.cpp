@@ -283,6 +283,7 @@ int main(int argc, char *argv[]){
 
   printf("\nYou are running the %s algorithm with the following paramers:\nT0 = %d\nNumber of melting iterations = %d\nNumber of iterations per temperature = %d\nTarget distance = %d\n", algorithmType,(int) T0, (int) meltingIterations, (int) iterationsPerTemperature,(int) targetDistance);
 
+  string fileName = argv[1]; 
   int ncity=GetData(argv[1],cities);
   printf("Read %d cities from data file\n",ncity);
   printf("Distance of initially provided path: %lf\n", totalDistance(cities, ncity)); 
@@ -346,7 +347,9 @@ int main(int argc, char *argv[]){
   c->SetLeftMargin(0.15);
   c->SetRightMargin(0.15);
   c->SetBottomMargin(0.15);
-  g->SetTitle("Distance vs. Temperature");
+
+  string graphTitle = string("Distance Vs. Time of ") +  fileName; 
+  g->SetTitle(graphTitle.c_str());
   g->GetYaxis()->SetTitle("Distance (km)");
   g->GetYaxis()->CenterTitle();
   g->GetXaxis()->SetTitle("Temperature");
