@@ -271,7 +271,10 @@ int main(int argc, char *argv[]){
 	copy(cities, cities + ncity, bestCity);
 	while ((totalDistance(cities, ncity) > targetDistance)&& !killSwitch){
 		printf("Target distance of %lf not reached, currecnt best distance = %lf\n", targetDistance, bestDistance);
+
+		melt(cities, ncity, T0, 1000);
 		simulatedAnnealingTwoOpt(cities, ncity, T0, numIterations);
+
 		double testDistance = totalDistance(cities, ncity);
 		printf("Most recent calculated distance %lf\n", testDistance);
 		if (testDistance  < bestDistance){
@@ -287,7 +290,10 @@ int main(int argc, char *argv[]){
 	copy(cities, cities + ncity, bestCity);
 	while ((totalDistance(cities, ncity) > targetDistance)&& !killSwitch){
 		printf("Target distance of %lf not reached, currecnt best distance = %lf\n", targetDistance, bestDistance);
+		
+		melt(cities, ncity, T0, 1000);
 		simulatedAnnealingCitySwap(cities, ncity, T0, numIterations);
+		
 		double testDistance = totalDistance(cities, ncity);
 		printf("Most recent calculated distance %lf\n", testDistance);
 		if (testDistance  < bestDistance){
