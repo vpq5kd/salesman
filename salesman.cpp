@@ -11,6 +11,9 @@
 #include <cstring>
 #include <algorithm>
 #include <csignal>
+#include "TCanvas.h"
+#include "TGraph.h"
+
 using namespace std;
 // simple structure to store city coordinates
 // could also use std::pair<double> 
@@ -189,11 +192,14 @@ void simulatedAnnealingCitySwap(COORD cities [], int ncity, double T0, double it
 }
 
 //simulated annealing logic using the traditional two-opt method at random indeces.
-void simulatedAnnealingTwoOpt(COORD cities [], int ncity, double T0, double iterationsPerTemperature){
+void simulatedAnnealingTwoOpt(COORD cities [], double temperatureArray [], double distanceArray[], int ncity, double T0, double iterationsPerTemperature){
 	printf("Running twoopt formula\n"); 
 	double T = T0;
 	double oldDist = totalDistance(cities, ncity);
 	double newDist = 0.0;
+
+	int distanceArrayIterator = 0;
+	int temperatureArrayIterator = 0;	
 	while(T>0){
 		for (int i = 0; i < iterationsPerTemperature; i++){
 			int randCity1 = randInt(1,ncity-3);
@@ -218,7 +224,11 @@ void simulatedAnnealingTwoOpt(COORD cities [], int ncity, double T0, double iter
 				reverse(cities + randCity1 + 1, cities + randCity2 + 1);	
 			}
 		}
-		T-= 0.1;	
+		distanceArray[distanceArrayIterator] = oldDist;
+		temperatureArray[temperatureArrayIterator] = T;
+		distanceArrayIterator += 1; 
+		temperatureArrayIterator +=1;
+		T-=0.1; 	
 	}
 }
 
@@ -235,6 +245,8 @@ void writeRoute(const char * filename, const COORD cities [], int ncity){
 int main(int argc, char *argv[]){
   const int NMAX=2500;
   COORD cities[NMAX];
+  
+
 
   signal(SIGINT, signalHandler);
 
@@ -252,6 +264,8 @@ int main(int argc, char *argv[]){
 
   string citySwapVariableName = "City Swap";
 
+  double * temperatureArray = (double *) malloc(T0*1000*sizeof(double));
+  double * distanceArray = (double *) malloc(T0*1000*sizeof(double));
   if (argc > 6) {algorithmType = argv[6];} else {algorithmType = citySwapVariableName.c_str();}
   
 
@@ -263,19 +277,19 @@ int main(int argc, char *argv[]){
 
 
   melt(cities, ncity, T0, meltingIterations);
-  printf("Distance of path after melting: %lf\n", totalDistance(cities, ncity));
+  //printf("Distance of path after melting: %lf\n", totalDistance(cities, ncity));
 
   double bestDistance = 0.0;
   COORD bestCity[ncity]; 
   if (argc > 6 && strcmp("TwoOpt", argv[6])==0){
-	simulatedAnnealingTwoOpt(cities, ncity, T0, iterationsPerTemperature);
+	simulatedAnnealingTwoOpt(cities, temperatureArray, distanceArray, ncity, T0, iterationsPerTemperature);
 	bestDistance = totalDistance(cities, ncity);
 	copy(cities, cities + ncity, bestCity);
 	while ((totalDistance(cities, ncity) > targetDistance)&& !killSwitch){
 		printf("Target distance of %lf not reached, currecnt best distance = %lf\n", targetDistance, bestDistance);
 
 		melt(cities, ncity, T0, meltingIterations);
-		simulatedAnnealingTwoOpt(cities, ncity, T0, iterationsPerTemperature);
+		simulatedAnnealingTwoOpt(cities, temperatureArray, distanceArray, ncity, T0, iterationsPerTemperature);
 
 		double testDistance = totalDistance(cities, ncity);
 		printf("Most recent calculated distance %lf\n", testDistance);
@@ -311,6 +325,14 @@ int main(int argc, char *argv[]){
   string filename = "cities" + to_string(ncity) + "_optimal.dat";  
   writeRoute(filename.c_str(), bestCity, ncity);
 
+  int dataPoints = T0/.1; 
+  TCanvas *c = new TCanvas("c", "Statistics Canvas", 800, 600);
+  TGraph *g = new TGraph(dataPoints, temperatureArray, distanceArray);
+  g->Draw("AL");  
+  c->Update();
+
+  free(temperatureArray);
+  free(distanceArray);
   return 0;
 }
 
