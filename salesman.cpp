@@ -157,11 +157,13 @@ void melt(COORD cities [], int ncity, double T0, double iterationsPerTemperature
 }
 
 //smulated annealing logic using the method of swapping two random cities.
-void simulatedAnnealingCitySwap(COORD cities [], int ncity, double T0, double iterationsPerTemperature){
+void simulatedAnnealingCitySwap(COORD cities [], double temperatureArray [], double distanceArray [], double *dataPoints,  int ncity, double T0, double iterationsPerTemperature){
 	printf("Running city swap formula\n");
 	double T = T0;
 	double oldDist = totalDistance(cities, ncity);
 	double newDist = 0.0;
+
+	int arrayIterator = 0;
 	while(T>0){
 		for (int i = 0; i < iterationsPerTemperature; i++){
 			int randCity1 = randInt(0,ncity-1);
@@ -191,8 +193,12 @@ void simulatedAnnealingCitySwap(COORD cities [], int ncity, double T0, double it
 			
 			}
 		}
+		temperatureArray[arrayIterator] = T;
+		distanceArray[arrayIterator] = oldDist;
+		arrayIterator += 1;
 		T-= 0.1;	
 	}
+	*dataPoints = arrayIterator;
 }
 
 //simulated annealing logic using the traditional two-opt method at random indeces.
@@ -307,14 +313,14 @@ int main(int argc, char *argv[]){
   }
 
   else{ 
-	simulatedAnnealingCitySwap(cities, ncity, T0, iterationsPerTemperature);
+	simulatedAnnealingCitySwap(cities,temperatureArray, distanceArray, &dataPoints, ncity, T0, iterationsPerTemperature);
 	bestDistance = totalDistance(cities, ncity);
 	copy(cities, cities + ncity, bestCity);
 	while ((totalDistance(cities, ncity) > targetDistance)&& !killSwitch){
 		printf("Target distance of %lf not reached, currecnt best distance = %lf\n", targetDistance, bestDistance);
 		
 		melt(cities, ncity, T0, meltingIterations);
-		simulatedAnnealingCitySwap(cities, ncity, T0, iterationsPerTemperature);
+		simulatedAnnealingCitySwap(cities, temperatureArray, distanceArray, &dataPoints, ncity, T0, iterationsPerTemperature);
 		
 		double testDistance = totalDistance(cities, ncity);
 		printf("Most recent calculated distance %lf\n", testDistance);
@@ -328,23 +334,29 @@ int main(int argc, char *argv[]){
 
   printf("Final best distance found: %lf\n", bestDistance);
 
-  string filename = "cities" + to_string(ncity) + "_optimal.dat";  
-  writeRoute(filename.c_str(), bestCity, ncity);
+  string dataFileName = "cities" + to_string(ncity) + "_optimal.dat";  
+  string distanceVsTimeFileName = "an" + to_string(ncity) + ".png";
+  writeRoute(dataFileName.c_str(), bestCity, ncity);
+
   reachedEnd = true; 
   TApplication app("app", &argc, argv);
   TCanvas *c = new TCanvas("c", "Statistics Canvas", 1000, 800);
   TGraph *g = new TGraph(dataPoints, temperatureArray, distanceArray);
 
-
-  g->Draw("APRX");
+  c->SetLeftMargin(0.15);
+  c->SetRightMargin(0.15);
+  c->SetBottomMargin(0.15);
   g->SetTitle("Distance vs. Temperature");
   g->GetYaxis()->SetTitle("Distance (km)");
   g->GetYaxis()->CenterTitle();
   g->GetXaxis()->SetTitle("Temperature");
   g->GetXaxis()->CenterTitle();
 
+  g->Draw("APRX");
 
   c->Update();
+  c->SaveAs(distanceVsTimeFileName.c_str());
+
   app.Run();
   free(temperatureArray);
   free(distanceArray);
