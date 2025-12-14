@@ -112,11 +112,11 @@ void randCitySwap(COORD cities [], int ncity){
 }
 
 //melt function
-void melt(COORD cities [], int ncity, double T0, double numIterations){
+void melt(COORD cities [], int ncity, double T0, double iterationsPerTemperature){
 
 	double oldDist = totalDistance(cities, ncity);
 	double newDist = 0.0; 
-	for (int i = 0; i<numIterations; i++){
+	for (int i = 0; i<iterationsPerTemperature; i++){
 		
 		int randCity1 = randInt(0,ncity-1);
 		int randCity2 = randInt(0,ncity-1);
@@ -150,13 +150,13 @@ void melt(COORD cities [], int ncity, double T0, double numIterations){
 }
 
 //smulated annealing logic using the method of swapping two random cities.
-void simulatedAnnealingCitySwap(COORD cities [], int ncity, double T0, double numIterations){
+void simulatedAnnealingCitySwap(COORD cities [], int ncity, double T0, double iterationsPerTemperature){
 	printf("Running city swap formula\n");
 	double T = T0;
 	double oldDist = totalDistance(cities, ncity);
 	double newDist = 0.0;
 	while(T>0){
-		for (int i = 0; i < numIterations; i++){
+		for (int i = 0; i < iterationsPerTemperature; i++){
 			int randCity1 = randInt(0,ncity-1);
 			int randCity2 = randInt(0,ncity-1);
 			while (randCity2 == randCity1){
@@ -189,13 +189,13 @@ void simulatedAnnealingCitySwap(COORD cities [], int ncity, double T0, double nu
 }
 
 //simulated annealing logic using the traditional two-opt method at random indeces.
-void simulatedAnnealingTwoOpt(COORD cities [], int ncity, double T0, double numIterations){
+void simulatedAnnealingTwoOpt(COORD cities [], int ncity, double T0, double iterationsPerTemperature){
 	printf("Running twoopt formula\n"); 
 	double T = T0;
 	double oldDist = totalDistance(cities, ncity);
 	double newDist = 0.0;
 	while(T>0){
-		for (int i = 0; i < numIterations; i++){
+		for (int i = 0; i < iterationsPerTemperature; i++){
 			int randCity1 = randInt(1,ncity-3);
 			int randCity2 = randInt(randCity1 + 2,ncity-1);
 			reverse(cities + randCity1 + 1, cities + randCity2 + 1);
@@ -244,36 +244,38 @@ int main(int argc, char *argv[]){
   }
 
   double T0 = atoi(argv[2]); //second argument value is the initial temperature
-  double numIterations = atoi(argv[3]); //third argument value is the number of iterations per temperature step.
-  double targetDistance = atoi(argv[4]); //fourth argument value is upper, non-inclusive, threshold for distance
+  double meltingIterations = atoi(argv[3]); //third argument value is number of iterations used during the melting phase. 
+  double iterationsPerTemperature = atoi(argv[4]); //fourth argument value is the number of iterations per temperature step.
+  double targetDistance = atoi(argv[5]); //fifth argument value is upper, non-inclusive, threshold for distance.
+
   const char * algorithmType;
 
   string citySwapVariableName = "City Swap";
 
-  if (argc > 5) {algorithmType = argv[5];} else {algorithmType = citySwapVariableName.c_str();}
+  if (argc > 6) {algorithmType = argv[6];} else {algorithmType = citySwapVariableName.c_str();}
   
 
-  printf("You are running the %s algorithm with the following paramers:\nT0 = %d\nNumber of iterations per temperature = %d\nTarget distance = %d\n", algorithmType,(int) T0, (int) numIterations,(int) targetDistance);
+  printf("\nYou are running the %s algorithm with the following paramers:\nT0 = %d\nNumber of melting iterations = %d\nNumber of iterations per temperature = %d\nTarget distance = %d\n", algorithmType,(int) T0, (int) meltingIterations, (int) iterationsPerTemperature,(int) targetDistance);
 
   int ncity=GetData(argv[1],cities);
   printf("Read %d cities from data file\n",ncity);
   printf("Distance of initially provided path: %lf\n", totalDistance(cities, ncity)); 
 
 
-  melt(cities, ncity, T0, 1000);
+  melt(cities, ncity, T0, meltingIterations);
   printf("Distance of path after melting: %lf\n", totalDistance(cities, ncity));
 
   double bestDistance = 0.0;
   COORD bestCity[ncity]; 
-  if (argc > 5 && strcmp("TwoOpt", argv[5])==0){
-	simulatedAnnealingTwoOpt(cities, ncity, T0, numIterations);
+  if (argc > 6 && strcmp("TwoOpt", argv[6])==0){
+	simulatedAnnealingTwoOpt(cities, ncity, T0, iterationsPerTemperature);
 	bestDistance = totalDistance(cities, ncity);
 	copy(cities, cities + ncity, bestCity);
 	while ((totalDistance(cities, ncity) > targetDistance)&& !killSwitch){
 		printf("Target distance of %lf not reached, currecnt best distance = %lf\n", targetDistance, bestDistance);
 
-		melt(cities, ncity, T0, 1000);
-		simulatedAnnealingTwoOpt(cities, ncity, T0, numIterations);
+		melt(cities, ncity, T0, meltingIterations);
+		simulatedAnnealingTwoOpt(cities, ncity, T0, iterationsPerTemperature);
 
 		double testDistance = totalDistance(cities, ncity);
 		printf("Most recent calculated distance %lf\n", testDistance);
@@ -285,14 +287,14 @@ int main(int argc, char *argv[]){
   }
 
   else{ 
-	simulatedAnnealingCitySwap(cities, ncity, T0, numIterations);
+	simulatedAnnealingCitySwap(cities, ncity, T0, iterationsPerTemperature);
 	bestDistance = totalDistance(cities, ncity);
 	copy(cities, cities + ncity, bestCity);
 	while ((totalDistance(cities, ncity) > targetDistance)&& !killSwitch){
 		printf("Target distance of %lf not reached, currecnt best distance = %lf\n", targetDistance, bestDistance);
 		
-		melt(cities, ncity, T0, 1000);
-		simulatedAnnealingCitySwap(cities, ncity, T0, numIterations);
+		melt(cities, ncity, T0, meltingIterations);
+		simulatedAnnealingCitySwap(cities, ncity, T0, iterationsPerTemperature);
 		
 		double testDistance = totalDistance(cities, ncity);
 		printf("Most recent calculated distance %lf\n", testDistance);
