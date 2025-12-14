@@ -13,7 +13,8 @@
 #include <csignal>
 #include "TCanvas.h"
 #include "TGraph.h"
-
+#include "TApplication.h"
+#include "TAxis.h"
 using namespace std;
 // simple structure to store city coordinates
 // could also use std::pair<double> 
@@ -25,6 +26,7 @@ typedef struct {
 
 //bool that defines when to exit
 bool killSwitch = false; 
+bool reachedEnd = false; 
 
 //random number generator device
 mt19937 gen(random_device{}());
@@ -41,6 +43,8 @@ double randDouble(double a, double b){
 
 //signal handler for interrupt exit
 void signalHandler(int sig){
+	if(reachedEnd) {exit(0);}
+
 	printf("\nProgram will exit momentarily with the best solution found so far!\n");
 	killSwitch = true;
 }
@@ -192,7 +196,7 @@ void simulatedAnnealingCitySwap(COORD cities [], int ncity, double T0, double it
 }
 
 //simulated annealing logic using the traditional two-opt method at random indeces.
-void simulatedAnnealingTwoOpt(COORD cities [], double temperatureArray [], double distanceArray[], int ncity, double T0, double iterationsPerTemperature){
+void simulatedAnnealingTwoOpt(COORD cities [], double temperatureArray [], double distanceArray[], double * dataPoints,  int ncity, double T0, double iterationsPerTemperature){
 	printf("Running twoopt formula\n"); 
 	double T = T0;
 	double oldDist = totalDistance(cities, ncity);
@@ -230,6 +234,7 @@ void simulatedAnnealingTwoOpt(COORD cities [], double temperatureArray [], doubl
 		temperatureArrayIterator +=1;
 		T-=0.1; 	
 	}
+	*dataPoints = temperatureArrayIterator;
 }
 
 //saves the route to an output file 
@@ -264,6 +269,7 @@ int main(int argc, char *argv[]){
 
   string citySwapVariableName = "City Swap";
 
+  double dataPoints; 
   double * temperatureArray = (double *) malloc(T0*1000*sizeof(double));
   double * distanceArray = (double *) malloc(T0*1000*sizeof(double));
   if (argc > 6) {algorithmType = argv[6];} else {algorithmType = citySwapVariableName.c_str();}
@@ -282,14 +288,14 @@ int main(int argc, char *argv[]){
   double bestDistance = 0.0;
   COORD bestCity[ncity]; 
   if (argc > 6 && strcmp("TwoOpt", argv[6])==0){
-	simulatedAnnealingTwoOpt(cities, temperatureArray, distanceArray, ncity, T0, iterationsPerTemperature);
+	simulatedAnnealingTwoOpt(cities, temperatureArray, distanceArray, &dataPoints, ncity, T0, iterationsPerTemperature);
 	bestDistance = totalDistance(cities, ncity);
 	copy(cities, cities + ncity, bestCity);
 	while ((totalDistance(cities, ncity) > targetDistance)&& !killSwitch){
 		printf("Target distance of %lf not reached, currecnt best distance = %lf\n", targetDistance, bestDistance);
 
 		melt(cities, ncity, T0, meltingIterations);
-		simulatedAnnealingTwoOpt(cities, temperatureArray, distanceArray, ncity, T0, iterationsPerTemperature);
+		simulatedAnnealingTwoOpt(cities, temperatureArray, distanceArray, &dataPoints, ncity, T0, iterationsPerTemperature);
 
 		double testDistance = totalDistance(cities, ncity);
 		printf("Most recent calculated distance %lf\n", testDistance);
@@ -324,13 +330,22 @@ int main(int argc, char *argv[]){
 
   string filename = "cities" + to_string(ncity) + "_optimal.dat";  
   writeRoute(filename.c_str(), bestCity, ncity);
-
-  int dataPoints = T0/.1; 
-  TCanvas *c = new TCanvas("c", "Statistics Canvas", 800, 600);
+  reachedEnd = true; 
+  TApplication app("app", &argc, argv);
+  TCanvas *c = new TCanvas("c", "Statistics Canvas", 1000, 800);
   TGraph *g = new TGraph(dataPoints, temperatureArray, distanceArray);
-  g->Draw("AL");  
-  c->Update();
 
+
+  g->Draw("APRX");
+  g->SetTitle("Distance vs. Temperature");
+  g->GetYaxis()->SetTitle("Distance (km)");
+  g->GetYaxis()->CenterTitle();
+  g->GetXaxis()->SetTitle("Temperature");
+  g->GetXaxis()->CenterTitle();
+
+
+  c->Update();
+  app.Run();
   free(temperatureArray);
   free(distanceArray);
   return 0;
