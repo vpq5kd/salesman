@@ -11,6 +11,7 @@
 #include <cstring>
 #include <algorithm>
 #include <csignal>
+#include <time.h>
 #include "TCanvas.h"
 #include "TGraph.h"
 #include "TApplication.h"
@@ -254,6 +255,8 @@ void writeRoute(const char * filename, const COORD cities [], int ncity){
 }
 
 int main(int argc, char *argv[]){
+
+  clock_t tStart = clock();
   const int NMAX=2500;
   COORD cities[NMAX];
   
@@ -334,6 +337,7 @@ int main(int argc, char *argv[]){
   }
 
   printf("Final best distance found: %lf\n", bestDistance);
+  printf("Time taken for solution execution: %.2fs\n", (double) (clock() - tStart)/CLOCKS_PER_SEC);
 
   string dataFileName = "cities" + to_string(ncity) + "_optimal.dat";  
   string distanceVsTimeFileName = "an" + to_string(ncity) + ".png";
@@ -348,7 +352,7 @@ int main(int argc, char *argv[]){
   c->SetRightMargin(0.15);
   c->SetBottomMargin(0.15);
 
-  string graphTitle = string("Distance Vs. Time of ") +  fileName; 
+  string graphTitle = string("Distance Vs. Temperature of ") +  fileName; 
   g->SetTitle(graphTitle.c_str());
   g->GetYaxis()->SetTitle("Distance (km)");
   g->GetYaxis()->CenterTitle();
