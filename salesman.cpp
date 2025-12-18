@@ -409,6 +409,7 @@ int main(int argc, char *argv[]){
   g->GetYaxis()->SetTitle("Distance (km)");
   g->GetYaxis()->CenterTitle();
   g->GetYaxis()->SetTitleOffset(1.4);
+
   g->GetXaxis()->SetTitle("Temperature");
   g->GetXaxis()->CenterTitle();
   g->GetXaxis()->SetTitleOffset(1.4);
