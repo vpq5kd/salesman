@@ -25,9 +25,13 @@ If the `TwoOpt` argument is not used the program will default to a less optimal 
 
 In terms of parameter choices, I orginally had manual control over `T0`, the number of melting iterations, and the number of iterations per temperature step. This, however, has changed. My current algorithm chooses `T0` by making a bunch of random swaps and finding the maximum dL = L_new - L_old, then setting `T0` to 100 + (max(dL)). For the melting step, I hard-coded the number of iterations to be `100*ncity`. Further, for the number of iterations per temperature step I changed from a discrete, static, self-selected number to a scalable value that changes with each temperature step ranging from `10*ncity*(T0/T)` <= `100*ncity`, where `T`, is the current temperature step. I also found that scaling `T` by  `T*=alpha`, where `alpha=0.995`, allowed more finite temperature steps and lead to a more optimal solution. This annealing schedule change was based on a recommendation from chatGPT following a prompt regarding techniques in SA to reliably find more optimal solutions.
 
+**Other Optimizatons:**
+
+*`deltaDist` was changed in the TwoOpt formula from being calculated by recalculating the two distance before and after the reversal, now it only caculates the needed changes and returns (O(N) -> O(1))!  - this change has not yet been made in the city swap method so that one still hangs for a while.
+
 *be advised* this program can be halted in the middle of execution by using the usual ctrl ^C command, however, it will wait until the current iteration of annealing is done before terminating.
 
-**cities150** 317298.645290km 48257.446121km 289.81s
+**cities150** 317298.645290km 48577.332461km 11.82s
 
 **ciites1k** 732177.726605km 96226.304264km 15609.72s
 
