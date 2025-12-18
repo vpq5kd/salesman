@@ -101,6 +101,27 @@ double deltaDistTwoOpt(const COORD cities [], int ncity, int randCity1, int rand
 	return deltaDist;
 	
 }
+//function that allows you to avoid recalculating totaldistance in the city swap method
+
+double deltaDistCitySwap(const COORD cities [], int ncity, int randCity1, int randCity2){
+	if (randCity1 > randCity2){
+		swap(randCity1, randCity2);
+	}
+	COORD city1 = cities[randCity1];
+	COORD city1a = cities[(randCity1-1 + ncity)%ncity];
+	COORD city1b = cities[(randCity1+1)];
+	COORD city2 = cities[randCity2];	
+	COORD city2a = cities[randCity2 -1];
+	COORD city2b = cities[(randCity2 + 1) % ncity];
+	
+	double oldDist = computeDistanceCities(city1a, city1) + computeDistanceCities(city1, city1b) + computeDistanceCities(city2a, city2) + computeDistanceCities(city2, city2b);
+	double newDist = computeDistanceCities(city1a, city2) + computeDistanceCities(city2, city1b) + computeDistanceCities(city2a, city1) + computeDistanceCities(city1, city2b);
+
+	double deltaDist = newDist-oldDist;
+
+	return deltaDist;
+	
+}
 
 //function that computes total distance of an array of cities
 double totalDistance(const COORD cities[], int ncities){
@@ -167,7 +188,7 @@ void simulatedAnnealingCitySwap(COORD cities [], double temperatureArray [], dou
 	printf("Running city swap formula\n");
 	double T = T0;
 	double oldDist = totalDistance(cities, ncity);
-	double newDist = 0.0;
+	//double newDist = 0.0;
 
 	int arrayIterator = 0;
 
@@ -184,14 +205,14 @@ void simulatedAnnealingCitySwap(COORD cities [], double temperatureArray [], dou
 			while (randCity2 == randCity1){
 				randCity2 = randInt(0, ncity-1);
 			}
-			swap(cities[randCity1], cities[randCity2]);
 
-			newDist = totalDistance(cities, ncity);
+			//newDist = totalDistance(cities, ncity);
 
-			double deltaDist = newDist - oldDist;
+			double deltaDist = deltaDistCitySwap(cities, ncity, randCity1, randCity2); 
 			
 			if (deltaDist < 0){
-				oldDist = newDist;
+				oldDist += deltaDist;
+				swap(cities[randCity1], cities[randCity2]);
 				continue;
 			}
 			else {
@@ -199,10 +220,10 @@ void simulatedAnnealingCitySwap(COORD cities [], double temperatureArray [], dou
 				double r = randDouble(0.0,1.0);
 
 				if (r < p){
-					oldDist = newDist;
+					oldDist += deltaDist;
+					swap(cities[randCity1], cities[randCity2]);
 					continue;
 				}
-				swap(cities[randCity1], cities[randCity2]);
 			
 			}
 		}
