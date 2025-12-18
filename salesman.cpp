@@ -46,7 +46,7 @@ double randDouble(double a, double b){
 //signal handler for interrupt exit
 void signalHandler(int sig){
 	if(reachedEnd) {exit(0);}
-
+	
 	printf("\nProgram will exit momentarily with the best solution found so far!\n");
 	killSwitch = true;
 }
@@ -263,11 +263,20 @@ int main(int argc, char *argv[]){
   signal(SIGINT, signalHandler);
 
   if (argc<2){
-    printf("You did not provide the appropriate arguments. Usage is as follows: [files.dat] [target value]\n");
+    printf("You did not provide the appropriate arguments. Usage is as follows: [files.dat] [-n (no additional rotaitons) || target value]\n");
     return 1;
   }
 
-  double targetDistance = atoi(argv[2]); 
+  double targetDistance;
+  if (strcmp("-n", argv[2])){
+	targetDistance = 0;	
+	killSwitch = true;
+  }
+
+  else{
+  	targetDistance = atoi(argv[2]);
+  }
+
   double dataPoints; 
   
   string fileName = argv[1]; 
