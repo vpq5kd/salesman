@@ -87,6 +87,26 @@ double computeDistance(double lat1, double lon1, double lat2, double lon2){
 	return d;
 }
 
+//function defined after bulk of code was written. Used to make new functions easier to write. 
+double computeDistanceCities(const COORD city1, const COORD city2){
+	return computeDistance(city1.lat, city1.lon, city2.lat, city2.lon);
+}
+
+//function that allows you to avoid recalculating totaldistance in TwoOpt method
+double deltaDistTwoOpt(const COORD cities [], int ncity, int randCity1, int randCity2){
+	COORD cityA = cities[randCity1];
+	COORD cityB = cities[randCity1+1];
+	COORD cityC = cities[randCity2];
+	COORD cityD = cities[(randCity2 + 1) % ncity];
+	
+	double oldDist = computeDistanceCities(cityA, cityB) + computeDistanceCities(cityC, cityD);
+	double newDist = computeDistanceCities(cityA, cityC) + computeDistanceCities(cityB, cityD);
+
+	double deltaDist = newDist-oldDist;
+
+	return deltaDist;
+	
+}
 
 //function that computes total distance of an array of cities
 double totalDistance(const COORD cities[], int ncities){
@@ -215,7 +235,7 @@ void simulatedAnnealingTwoOpt(COORD cities [], double temperatureArray [], doubl
 	printf("Running twoopt formula\n"); 
 	double T = T0;
 	double oldDist = totalDistance(cities, ncity);
-	double newDist = 0.0;
+	//double newDist = 0.0;
 
 	int distanceArrayIterator = 0;
 	int temperatureArrayIterator = 0;
@@ -230,24 +250,26 @@ void simulatedAnnealingTwoOpt(COORD cities [], double temperatureArray [], doubl
 		for (int i = 0; i < iters; i++){
 			int randCity1 = randInt(1,ncity-3);
 			int randCity2 = randInt(randCity1 + 2,ncity-1);
-			reverse(cities + randCity1 + 1, cities + randCity2 + 1);
-			newDist = totalDistance(cities, ncity);
 
-			double deltaDist = newDist - oldDist;
+			double deltaDist = deltaDistTwoOpt(cities, ncity, randCity1, randCity2);
 			
 			if (deltaDist < 0){
-				oldDist = newDist;
+
+				reverse(cities + randCity1 + 1, cities + randCity2 + 1);
+				oldDist += deltaDist;
 				continue;
 			}
+
 			else {
 				double p = exp(-deltaDist/T);
 				double r = randDouble(0.0,1.0);
 
 				if (r < p){
-					oldDist = newDist;
+
+					reverse(cities + randCity1 + 1, cities + randCity2 + 1);
+					oldDist += deltaDist;
 					continue;
 				}
-				reverse(cities + randCity1 + 1, cities + randCity2 + 1);	
 			}
 		}
 		distanceArray[distanceArrayIterator] = oldDist;
@@ -269,7 +291,7 @@ void writeRoute(const char * filename, const COORD cities [], int ncity){
 	printf("Saved final route to %s\n", filename);
 }
 
-
+//function to calculate T0
 double calculateT0(COORD cities [],int ncity){
 
 	COORD citiesCopy[3000];
@@ -295,6 +317,8 @@ double calculateT0(COORD cities [],int ncity){
 	}
 	return 100 +deltaDistMax;
 }
+
+
 int main(int argc, char *argv[]){
 
   clock_t tStart = clock();
