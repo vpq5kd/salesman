@@ -73,6 +73,9 @@ def make_plot(infile,optfile=None,region="NA"):
     if optfile: ax.plot(cities_out[:,0], cities_out[:,1],
                         lw=2, color="blue", marker='o', markersize=3)
 
+    text_string = f'Length Before: 317298.645290km\nLength After: 49783.180354km'
+    ax.text(0.05, 0.95, text_string)
+
     # Labels
     ax.set_title("Plot of Salesman's Cities")
     ax.set_xlabel("longitude")
