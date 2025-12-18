@@ -33,7 +33,7 @@ In terms of parameter choices, I orginally had manual control over `T0`, the num
 
 *be advised* this program can be halted in the middle of execution by using the usual ctrl ^C command, however, it will wait until the current iteration of annealing is done before terminating.
 
-**cities150** 317298.645290km 48577.332461km 11.82s
+**cities150** 317298.645290km 49783.180354km 15.09s
 
 **ciites1k** 732177.726605km 95863.791658km 130.02s
 
