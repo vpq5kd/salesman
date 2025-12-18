@@ -165,8 +165,15 @@ void simulatedAnnealingCitySwap(COORD cities [], double temperatureArray [], dou
 	double newDist = 0.0;
 
 	int arrayIterator = 0;
-	while(T>0){
-		for (int i = 0; i < iterationsPerTemperature; i++){
+
+	double Tmin = 1e-6;
+	double alpha = 0.995; 
+	while(T>Tmin){
+		int iters = iterationsPerTemperature * (T0/T);
+		if (iters > 100*ncity){
+			iters = 100*ncity;
+		}
+		for (int i = 0; i < iters; i++){
 			int randCity1 = randInt(0,ncity-1);
 			int randCity2 = randInt(0,ncity-1);
 			while (randCity2 == randCity1){
@@ -197,7 +204,7 @@ void simulatedAnnealingCitySwap(COORD cities [], double temperatureArray [], dou
 		temperatureArray[arrayIterator] = T;
 		distanceArray[arrayIterator] = oldDist;
 		arrayIterator += 1;
-		T-= 0.1;	
+		T*=alpha;	
 	}
 	*dataPoints = arrayIterator;
 }
@@ -210,9 +217,16 @@ void simulatedAnnealingTwoOpt(COORD cities [], double temperatureArray [], doubl
 	double newDist = 0.0;
 
 	int distanceArrayIterator = 0;
-	int temperatureArrayIterator = 0;	
-	while(T>0){
-		for (int i = 0; i < iterationsPerTemperature; i++){
+	int temperatureArrayIterator = 0;
+
+ 	double tMin = 1e-6;
+	double alpha = .995;	
+	while(T>tMin){
+		int iters = iterationsPerTemperature * (T0/T);
+		if (iters > 100*ncity){
+			iters = 100*ncity;
+		}
+		for (int i = 0; i < iters; i++){
 			int randCity1 = randInt(1,ncity-3);
 			int randCity2 = randInt(randCity1 + 2,ncity-1);
 			reverse(cities + randCity1 + 1, cities + randCity2 + 1);
@@ -239,7 +253,7 @@ void simulatedAnnealingTwoOpt(COORD cities [], double temperatureArray [], doubl
 		temperatureArray[temperatureArrayIterator] = T;
 		distanceArrayIterator += 1; 
 		temperatureArrayIterator +=1;
-		T-=0.1; 	
+		T*=alpha; 	
 	}
 	*dataPoints = temperatureArrayIterator;
 }
@@ -254,6 +268,32 @@ void writeRoute(const char * filename, const COORD cities [], int ncity){
 	printf("Saved final route to %s\n", filename);
 }
 
+
+double calculateT0(COORD cities [],int ncity){
+
+	COORD citiesCopy[3000];
+	copy(cities, cities +ncity, citiesCopy); 
+	double deltaDistMax = 0.0;
+	double newDist = 0.0;
+       	double oldDist = totalDistance(cities,ncity);	
+	for (int i = 0; i<100*ncity; i++){
+		int randCity1 = randInt(0,ncity-1);
+		int randCity2 = randInt(0,ncity-1);
+		while (randCity2 == randCity1){
+			randCity2 = randInt(0, ncity-1);
+		}
+		swap(citiesCopy[randCity1], citiesCopy[randCity2]);
+
+		newDist = totalDistance(citiesCopy, ncity);
+
+		double deltaDist = newDist - oldDist;
+		if (deltaDist > deltaDistMax){
+			deltaDistMax = deltaDist;
+		}	
+		oldDist = newDist; 
+	}
+	return 100 +deltaDistMax;
+}
 int main(int argc, char *argv[]){
 
   clock_t tStart = clock();
@@ -264,30 +304,37 @@ int main(int argc, char *argv[]){
 
   signal(SIGINT, signalHandler);
 
-  if (argc<5){
-    printf("You did not provide the appropriate arguments. Usage is as follows: [files.dat] [T0] [# Internal Iterations] [target value] [(optional} TwoOpt]]\n");
+  if (argc<3){
+    printf("You did not provide the appropriate arguments. Usage is as follows: [files.dat] [# Internal Iterations] [target value] [(optional} TwoOpt]]\n");
     return 1;
   }
 
-  double T0 = atoi(argv[2]); //second argument value is the initial temperature
-  double meltingIterations = atoi(argv[3]); //third argument value is number of iterations used during the melting phase. 
-  double iterationsPerTemperature = atoi(argv[4]); //fourth argument value is the number of iterations per temperature step.
-  double targetDistance = atoi(argv[5]); //fifth argument value is upper, non-inclusive, threshold for distance.
+  //double T0 = atoi(argv[2]); //second argument value is the initial temperature
+  //double meltingIterations = atoi(argv[2]); //third argument value is number of iterations used during the melting phase. 
+  
+  
+  double iterationsPerTemperature = atoi(argv[2]); //fourth argument value is the number of iterations per temperature step.
+  double targetDistance = atoi(argv[3]); //fifth argument value is upper, non-inclusive, threshold for distance.
 
   const char * algorithmType;
 
   string citySwapVariableName = "City Swap";
 
   double dataPoints; 
-  double * temperatureArray = (double *) malloc(T0*1000*sizeof(double));
-  double * distanceArray = (double *) malloc(T0*1000*sizeof(double));
-  if (argc > 6) {algorithmType = argv[6];} else {algorithmType = citySwapVariableName.c_str();}
+  if (argc > 4) {algorithmType = argv[4];} else {algorithmType = citySwapVariableName.c_str();}
   
 
-  printf("\nYou are running the %s algorithm with the following paramers:\nT0 = %d\nNumber of melting iterations = %d\nNumber of iterations per temperature = %d\nTarget distance = %d\n", algorithmType,(int) T0, (int) meltingIterations, (int) iterationsPerTemperature,(int) targetDistance);
 
   string fileName = argv[1]; 
   int ncity=GetData(argv[1],cities);
+ 
+  double meltingIterations = 100*ncity;
+  double T0 = calculateT0(cities, ncity);  
+  printf("\nYou are running the %s algorithm with the following paramers:\nT0 = %d\nNumber of melting iterations = %d\nNumber of iterations per temperature = %d\nTarget distance = %d\n", algorithmType,(int) T0, (int) meltingIterations, (int) iterationsPerTemperature,(int) targetDistance);
+
+  double * temperatureArray = (double *) malloc(T0*1000*sizeof(double));
+  double * distanceArray = (double *) malloc(T0*1000*sizeof(double));
+  
   printf("Read %d cities from data file\n",ncity);
   printf("Distance of initially provided path: %lf\n", totalDistance(cities, ncity)); 
 
@@ -297,7 +344,7 @@ int main(int argc, char *argv[]){
 
   double bestDistance = 0.0;
   COORD bestCity[ncity]; 
-  if (argc > 6 && strcmp("TwoOpt", argv[6])==0){
+  if (strcmp("TwoOpt", algorithmType)==0){
 	simulatedAnnealingTwoOpt(cities, temperatureArray, distanceArray, &dataPoints, ncity, T0, iterationsPerTemperature);
 	bestDistance = totalDistance(cities, ncity);
 	copy(cities, cities + ncity, bestCity);
