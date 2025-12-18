@@ -71,7 +71,7 @@ int GetData(char* fname, COORD *cities){
 
 
 //computes great circle distance between two points  using the haversine formula
-double computeDistance(double lat1, double lon1, double lat2, double lon2){
+double computeDistance_old(double lat1, double lon1, double lat2, double lon2){
 	double R = 6371.0;
 	double phi1 = lat1 * M_PI/180.0;
 	double phi2 = lat2 * M_PI/180.0;
@@ -85,6 +85,17 @@ double computeDistance(double lat1, double lon1, double lat2, double lon2){
 	double d = 2*R*asin(sqrt(a));
 	
 	return d;
+}
+
+//computes distance using haversine formula provided in project description
+double computeDistance(double lat1, double lon1, double lat2, double lon2){
+	double R = 6371.0;
+	double deltaLat = (lat2 - lat1)*M_PI/180.0;
+	double deltaLon = (lon2 - lon1)*M_PI/180.0;
+	double a = (sin(deltaLat/2)*sin(deltaLat/2)) + (cos(lat1*M_PI/180.0)*cos(lat2*M_PI/180.0)*(sin(deltaLon/2)*sin(deltaLon/2)));
+	double c = 2*atan2(sqrt(a),sqrt(1-a));
+
+	return R*c;
 }
 
 //function defined after bulk of code was written. Used to make new functions easier to write. 
