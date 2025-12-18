@@ -1,5 +1,3 @@
-// example code to read in a data file of city lat,long coordinates
-
 #include <string> 
 #include <stdio.h>
 #include <stdlib.h>
