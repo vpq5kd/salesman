@@ -268,7 +268,7 @@ int main(int argc, char *argv[]){
   }
 
   double targetDistance;
-  if (strcmp("-n", argv[2])){
+  if (strcmp("-n", argv[2])==0){
 	targetDistance = 0;	
 	killSwitch = true;
   }
@@ -284,8 +284,15 @@ int main(int argc, char *argv[]){
  
   double meltingIterations = 100*ncity;
   double T0 = calculateT0(cities, ncity);
-  double iterationsPerTemperature = 10*ncity;   
-  printf("\nYou are running the two-opt algorithm with the following paramers:\nT0 = %d\nTarget distance = %d\n",(int) T0,(int) targetDistance);
+  double iterationsPerTemperature = 10*ncity; 
+
+  if (killSwitch == false){  
+  	printf("\nYou are running the two-opt algorithm with the following parameters:\nT0 = %d\nTarget distance = %d\n",(int) T0,(int) targetDistance);
+  }
+
+  else {
+  	printf("\nYou are running the two-opt algorithm with the following parameters:\nT0 = %d\nTarget distance = not applicable\n", (int) T0);
+  }
 
   double * temperatureArray = (double *) malloc(T0*1000*sizeof(double));
   double * distanceArray = (double *) malloc(T0*1000*sizeof(double));
