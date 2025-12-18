@@ -435,6 +435,7 @@ int main(int argc, char *argv[]){
   g->GetXaxis()->SetMaxDigits(3);
   g->Draw("AP");
 
+  c->SetLogx();
   c->Update();
   c->SaveAs(distanceVsTimeFileName.c_str());
 
