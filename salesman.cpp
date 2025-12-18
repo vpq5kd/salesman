@@ -399,16 +399,19 @@ int main(int argc, char *argv[]){
   TCanvas *c = new TCanvas("c", "Statistics Canvas", 1000, 800);
   TGraph *g = new TGraph(dataPoints, temperatureArray, distanceArray);
 
-  c->SetLeftMargin(0.20);
-  c->SetRightMargin(0.20);
-  c->SetBottomMargin(0.20);
+  //c->SetLeftMargin(0.20);
+  //c->SetRightMargin(0.20);
+  //c->SetBottomMargin(0.20);
+  //c->SetTopMargin(0.20);
 
   string graphTitle = string("Distance Vs. Temperature of ") +  fileName; 
   g->SetTitle(graphTitle.c_str());
   g->GetYaxis()->SetTitle("Distance (km)");
   g->GetYaxis()->CenterTitle();
+  g->GetYaxis()->SetTitleOffset(1.4);
   g->GetXaxis()->SetTitle("Temperature");
   g->GetXaxis()->CenterTitle();
+  g->GetXaxis()->SetTitleOffset(1.4);
 
   g->GetXaxis()->SetMaxDigits(3);
   g->Draw("AP");
