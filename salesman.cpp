@@ -16,6 +16,7 @@
 #include "TGraph.h"
 #include "TApplication.h"
 #include "TAxis.h"
+
 using namespace std;
 // simple structure to store city coordinates
 // could also use std::pair<double> 
@@ -304,7 +305,7 @@ int main(int argc, char *argv[]){
 
   signal(SIGINT, signalHandler);
 
-  if (argc<3){
+  if (argc<2){
     printf("You did not provide the appropriate arguments. Usage is as follows: [files.dat] [# Internal Iterations] [target value] [(optional} TwoOpt]]\n");
     return 1;
   }
@@ -313,15 +314,15 @@ int main(int argc, char *argv[]){
   //double meltingIterations = atoi(argv[2]); //third argument value is number of iterations used during the melting phase. 
   
   
-  double iterationsPerTemperature = atoi(argv[2]); //fourth argument value is the number of iterations per temperature step.
-  double targetDistance = atoi(argv[3]); //fifth argument value is upper, non-inclusive, threshold for distance.
+  //double iterationsPerTemperature = atoi(argv[2]); //fourth argument value is the number of iterations per temperature step.
+  double targetDistance = atoi(argv[2]); //fifth argument value is upper, non-inclusive, threshold for distance.
 
   const char * algorithmType;
 
   string citySwapVariableName = "City Swap";
 
   double dataPoints; 
-  if (argc > 4) {algorithmType = argv[4];} else {algorithmType = citySwapVariableName.c_str();}
+  if (argc > 3) {algorithmType = argv[3];} else {algorithmType = citySwapVariableName.c_str();}
   
 
 
@@ -329,7 +330,8 @@ int main(int argc, char *argv[]){
   int ncity=GetData(argv[1],cities);
  
   double meltingIterations = 100*ncity;
-  double T0 = calculateT0(cities, ncity);  
+  double T0 = calculateT0(cities, ncity);
+  double iterationsPerTemperature = 10*ncity;   
   printf("\nYou are running the %s algorithm with the following paramers:\nT0 = %d\nNumber of melting iterations = %d\nNumber of iterations per temperature = %d\nTarget distance = %d\n", algorithmType,(int) T0, (int) meltingIterations, (int) iterationsPerTemperature,(int) targetDistance);
 
   double * temperatureArray = (double *) malloc(T0*1000*sizeof(double));
@@ -406,7 +408,8 @@ int main(int argc, char *argv[]){
   g->GetXaxis()->SetTitle("Temperature");
   g->GetXaxis()->CenterTitle();
 
-  g->Draw("APRX");
+  g->GetXaxis()->SetMaxDigits(3);
+  g->Draw("AP");
 
   c->Update();
   c->SaveAs(distanceVsTimeFileName.c_str());
