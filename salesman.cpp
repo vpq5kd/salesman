@@ -70,23 +70,6 @@ int GetData(char* fname, COORD *cities){
 }
 
 
-//computes great circle distance between two points  using the haversine formula
-double computeDistance_old(double lat1, double lon1, double lat2, double lon2){
-	double R = 6371.0;
-	double phi1 = lat1 * M_PI/180.0;
-	double phi2 = lat2 * M_PI/180.0;
-	double lam1 = lon1 * M_PI/180.0;
-	double lam2 = lon2 * M_PI/180.0;
-
-	double dphi = phi2 - phi1;
-	double dlam = lam2 - lam1;
-
-	double a = (sin(dphi/2) * sin(dphi/2)) + (cos(phi1)*cos(phi2)*sin(dlam/2)*sin(dlam/2));
-	double d = 2*R*asin(sqrt(a));
-	
-	return d;
-}
-
 //computes distance using haversine formula provided in project description
 double computeDistance(double lat1, double lon1, double lat2, double lon2){
 	double R = 6371.0;
@@ -139,16 +122,6 @@ double totalDistance(const COORD cities[], int ncities){
 	totalRouteDistance+= retDistance;
 
 	return totalRouteDistance ;
-}
-
-//function to swap two cities (used for melting)
-void randCitySwap(COORD cities [], int ncity){
-	int randCity1 = randInt(0,ncity-1);
-	int randCity2 = randInt(0,ncity-1);
-	while (randCity2 == randCity1){
-		randCity2 = randInt(0, ncity-1);
-	}
-	swap(cities[randCity1], cities[randCity2]);
 }
 
 //melt function
@@ -341,22 +314,16 @@ int main(int argc, char *argv[]){
   signal(SIGINT, signalHandler);
 
   if (argc<2){
-    printf("You did not provide the appropriate arguments. Usage is as follows: [files.dat] [# Internal Iterations] [target value] [(optional} TwoOpt]]\n");
+    printf("You did not provide the appropriate arguments. Usage is as follows: [files.dat] [target value] [(optional} TwoOpt]]\n");
     return 1;
   }
 
-  //double T0 = atoi(argv[2]); //second argument value is the initial temperature
-  //double meltingIterations = atoi(argv[2]); //third argument value is number of iterations used during the melting phase. 
-  
-  
-  //double iterationsPerTemperature = atoi(argv[2]); //fourth argument value is the number of iterations per temperature step.
-  double targetDistance = atoi(argv[2]); //fifth argument value is upper, non-inclusive, threshold for distance.
-
+  double targetDistance = atoi(argv[2]); 
   const char * algorithmType;
-
+  double dataPoints; 
+  
   string citySwapVariableName = "City Swap";
 
-  double dataPoints; 
   if (argc > 3) {algorithmType = argv[3];} else {algorithmType = citySwapVariableName.c_str();}
   
 
@@ -367,7 +334,7 @@ int main(int argc, char *argv[]){
   double meltingIterations = 100*ncity;
   double T0 = calculateT0(cities, ncity);
   double iterationsPerTemperature = 10*ncity;   
-  printf("\nYou are running the %s algorithm with the following paramers:\nT0 = %d\nNumber of melting iterations = %d\nNumber of iterations per temperature = %d\nTarget distance = %d\n", algorithmType,(int) T0, (int) meltingIterations, (int) iterationsPerTemperature,(int) targetDistance);
+  printf("\nYou are running the %s algorithm with the following paramers:\nT0 = %d\nTarget distance = %d\n", algorithmType,(int) T0,(int) targetDistance);
 
   double * temperatureArray = (double *) malloc(T0*1000*sizeof(double));
   double * distanceArray = (double *) malloc(T0*1000*sizeof(double));
@@ -377,10 +344,10 @@ int main(int argc, char *argv[]){
 
 
   melt(cities, ncity, T0, meltingIterations);
-  //printf("Distance of path after melting: %lf\n", totalDistance(cities, ncity));
 
   double bestDistance = 0.0;
   COORD bestCity[ncity]; 
+
   if (strcmp("TwoOpt", algorithmType)==0){
 	simulatedAnnealingTwoOpt(cities, temperatureArray, distanceArray, &dataPoints, ncity, T0, iterationsPerTemperature);
 	bestDistance = totalDistance(cities, ncity);
@@ -432,9 +399,9 @@ int main(int argc, char *argv[]){
   TCanvas *c = new TCanvas("c", "Statistics Canvas", 1000, 800);
   TGraph *g = new TGraph(dataPoints, temperatureArray, distanceArray);
 
-  c->SetLeftMargin(0.15);
-  c->SetRightMargin(0.15);
-  c->SetBottomMargin(0.15);
+  c->SetLeftMargin(0.20);
+  c->SetRightMargin(0.20);
+  c->SetBottomMargin(0.20);
 
   string graphTitle = string("Distance Vs. Temperature of ") +  fileName; 
   g->SetTitle(graphTitle.c_str());
