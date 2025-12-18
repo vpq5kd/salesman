@@ -27,7 +27,7 @@ In terms of parameter choices, I orginally had manual control over `T0`, the num
 
 **Other Optimizatons:**
 
-* `deltaDist` was changed in the TwoOpt formula from being calculated by recalculating the two distance before and after the reversal, now it only caculates the needed changes and returns (O(N) -> O(1))!  - this change has not yet been made in the city swap method so that one still hangs for a while.
+* `deltaDist` was changed in the TwoOpt formula from being calculated by recalculating the distance before and after the reversal, now it only caculates the needed changes and returns, which is a O(N) -> O(1) optimization!  - this change has not yet been made in the city swap method so that one still hangs for a while.
 
 *be advised* this program can be halted in the middle of execution by using the usual ctrl ^C command, however, it will wait until the current iteration of annealing is done before terminating.
 
