@@ -1,18 +1,12 @@
-**Skeleton Code Provided by Robert Hirosky, PhD**
+# Travelling Salesman Problem Solved with Simulated Annealing
 
-* datareader.cpp : example code to read in the data files (use Makefile)
-* datareader.py  : example code to read in the data files
-* cities23.dat : list of coordinates for 23 cities in North America
-* cities150.dat : 150 cities in North America
-* cities1k.dat : 1207 cities in North America
-* cities2k.dat : 2063 cities around the world
-* routeplot.py : code to plot the globe and salesman's path<br>
-usage:<br>
-python routeplot.py cities.dat [cities2.dat] -r [="NA"],"World"'<br>
-NA = North America, World = Mercator projection of the whole earth
-* earth.C : (just for fun) plotting the globe in ROOT
+<img width="1246" height="600" alt="image" src="https://github.com/user-attachments/assets/bef67b3e-e2c8-496c-9807-55c246bf0671" />
+<figcaption>Before (red lines) vs. after (blue lines) a simulated annealing approach to the TSP for cities spanning the world.</figcaption> 
+<img width="1242" height="599" alt="image" src="https://github.com/user-attachments/assets/f324d926-4bf1-45d2-be0c-ba47eed61679" />
+<figcaption>Close up of the dense European section of the 2k cities case.</figcaption>
 
-***SALESMAN SOLUTIONS AND WRITEUP***
+------
+***SALESMAN SOLUTIONS AND EXPLANATION***
 
 Salesman is run by executing the command `./sales [-n||target value]`
 
@@ -45,3 +39,19 @@ The final map is created using `routeplot.py ` with the minor edit of the textbo
 
 --------------------------------------------
 **Disclaimer:** chatGPT was used in the development of this program in a similar manner to the traditional Google search or Stack Overflow query. That is, of course, for edits and assistance with syntax, coding convetions, c/cpp standard functions, etc. Except where otherwise noted, it was not used for the development of original thoughts or algorithmic code. All of my code can be explained thoroughly by me if necessary. 
+
+--------------------------------------------
+**Skeleton Code Provided by Robert Hirosky, PhD**
+
+* datareader.cpp : example code to read in the data files (use Makefile)
+* datareader.py  : example code to read in the data files
+* cities23.dat : list of coordinates for 23 cities in North America
+* cities150.dat : 150 cities in North America
+* cities1k.dat : 1207 cities in North America
+* cities2k.dat : 2063 cities around the world
+* routeplot.py : code to plot the globe and salesman's path<br>
+usage:<br>
+python routeplot.py cities.dat [cities2.dat] -r [="NA"],"World"'<br>
+NA = North America, World = Mercator projection of the whole earth
+* earth.C : (just for fun) plotting the globe in ROOT
+
