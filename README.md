@@ -34,6 +34,10 @@ In terms of parameter choices, I orginally had manual control over `T0`, the num
 
 *be advised* this program can be halted in the middle of execution by using the usual ctrl ^C command, however, it will wait until the current iteration of annealing is done before terminating.
 
+**Final Map:**
+
+The final map is created using `routeplot.py ` with the minor edit of the textbox addition. In order to streamline the process of adding the distances to the plot, I made the distance a "city" in my .dat file and processed it seperately in routeplot.py. As such, if you are attempting to run one of my `*_optimal.dat` files in your own plotting framework, either remove the first line of said file (it will have a "km" as its first two characters), or be sure to error handle approrpriately. 
+
 **cities150** 317299.0km 49374.6km 14.93s
 
 **ciites1k** 732178.0km 96068.9km 131.94s
