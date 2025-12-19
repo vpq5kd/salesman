@@ -212,8 +212,9 @@ void simulatedAnnealingTwoOpt(COORD cities [], double temperatureArray [], doubl
 }
 
 //saves the route to an output file 
-void writeRoute(const char * filename, const COORD cities [], int ncity){
+void writeRoute(const char * filename, const COORD cities [], int ncity, const COORD distanceCity){
 	ofstream out(filename);
+	out <<"km"<< " " << distanceCity.lat << " " << distanceCity.lon << "\n";
 	for (int i = 0; i<ncity; i++){
 		out << cities[i].lon << " " << cities[i].lat << "\n";
 	}
@@ -295,8 +296,10 @@ int main(int argc, char *argv[]){
   double * temperatureArray = (double *) malloc(T0*1000*sizeof(double));
   double * distanceArray = (double *) malloc(T0*1000*sizeof(double));
   
+  double beforeDistance = totalDistance(cities, ncity); 
+
   printf("Read %d cities from data file\n",ncity);
-  printf("Distance of initially provided path: %lf\n", totalDistance(cities, ncity)); 
+  printf("Distance of initially provided path: %lf\n", beforeDistance); 
 
 
   melt(cities, ncity, T0, meltingIterations);
@@ -325,9 +328,14 @@ int main(int argc, char *argv[]){
   printf("Final best distance found: %lf\n", bestDistance);
   printf("Time taken for solution execution: %.2fs\n", (double) (clock() - tStart)/CLOCKS_PER_SEC);
 
+  double afterDistance = bestDistance;
+  COORD distanceCity;
+  distanceCity.lat = beforeDistance;
+  distanceCity.lon = afterDistance; 
+
   string dataFileName = "cities" + to_string(ncity) + "_optimal.dat";  
   string distanceVsTimeFileName = "an" + to_string(ncity) + ".png";
-  writeRoute(dataFileName.c_str(), bestCity, ncity);
+  writeRoute(dataFileName.c_str(), bestCity, ncity, distanceCity);
 
   reachedEnd = true; 
   TApplication app("app", &argc, argv);

@@ -9,11 +9,16 @@ def load_xy(filename):
         for line in f:
             if line.startswith("#") or not line.strip():
                 continue
+            if line.startswith("km"):
+                cols = line.split()
+                before_distance = float(cols[1])
+                after_distance = float(cols[2])
+                continue
             cols = line.split()
             # use only first two columns as floats
             data.append([float(cols[0]), float(cols[1])])
     data.append(data[0]) # close the path from the last to the 1st city
-    return np.array(data)
+    return np.array(data), before_distance, after_distance
 
 def load_polygons(filename):
     """Load longitude/latitude polygons separated by blank lines."""
@@ -56,7 +61,7 @@ def make_plot(infile,optfile=None,region="NA"):
     # Load data
     polygons    = load_polygons("world_50m.dat")
     #polygons    = load_polygons("world.dat") # low res version
-    cities_orig = load_xy(infile)
+    cities_orig, before_distance, after_distance = load_xy(infile)
     if optfile: cities_out  = load_xy(optfile)
 
     fig, ax = plt.subplots(figsize=(10, 6))
@@ -73,8 +78,12 @@ def make_plot(infile,optfile=None,region="NA"):
     if optfile: ax.plot(cities_out[:,0], cities_out[:,1],
                         lw=2, color="blue", marker='o', markersize=3)
 
-    text_string = f'Length Before: 317298.645290km\nLength After: 49783.180354km'
-    ax.text(0.05, 0.95, text_string)
+    text_string = f'Length Before: {before_distance}km\nLength After: {after_distance}km'
+    
+    if region == "World":
+        ax.text(84,90, text_string)
+
+    else: ax.text(-90, 80, text_string)
 
     # Labels
     ax.set_title("Plot of Salesman's Cities")
