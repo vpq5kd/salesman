@@ -31,6 +31,8 @@ The final map is created using `routeplot.py ` with minor edits in order to prop
 
 **Solutions:**
 
+***Data File*** | *Before* | *After* | *Competion Time*
+
 **cities150** 317299.0km 49374.6km 14.93s
 
 **ciites1k** 732178.0km 96068.9km 131.94s
