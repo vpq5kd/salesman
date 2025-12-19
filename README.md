@@ -27,7 +27,7 @@ In terms of parameter choices, I orginally had manual control over `T0`, the num
 
 **Final Map:**
 
-The final map is created using `routeplot.py ` with the minor edit of the textbox addition. In order to streamline the process of adding the distances to the plot, I made the distance a "city" in my .dat file and processed it seperately in routeplot.py. As such, if you are attempting to run one of my `*_optimal.dat` files in your own plotting framework, either remove the first line of said file (it will have a "km" as its first two characters), or be sure to error handle approrpriately. 
+The final map is created using `routeplot.py ` with minor edits in order to proprely display the text box containing the distances. In order to streamline the process of adding these distances to the plot, I made the distance a "city" in my .dat file and processed it seperately in routeplot.py. As such, if you are attempting to run one of my `*_optimal.dat` files in your own plotting framework, either remove the first line of said file (it will have a "km" as its first two characters), or be sure to error handle approrpriately. 
 
 **Solutions:**
 
