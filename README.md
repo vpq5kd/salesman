@@ -17,7 +17,7 @@ NA = North America, World = Mercator projection of the whole earth
 
 ***SALESMAN SOLUTIONS AND WRITEUP***
 
-Salesman is run by executing the command `./salesman [-n||target value]`
+Salesman is run by executing the command `./sales [-n||target value]`
 
 * if the `-n` flag is chosen, the program will not iterate until it hits a target value but will instead exit after one full run. 
 
