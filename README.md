@@ -19,7 +19,8 @@ NA = North America, World = Mercator projection of the whole earth
 
 Salesman is run by executing the command `./sales [-n||target value]`
 
-* if the `-n` flag is chosen, the program will not iterate until it hits a target value but will instead exit after one full run. 
+* if the `-n` flag is chosen, the program will not iterate until it hits a target value but will instead exit after one full run.
+* **Note:** with high `ncity` values the code hangs for a few seconds directly after execution. At this time I believe that this has something to do with the compiler loading information into memory, but I'm not entirely sure. 
 
 Salesman is built by running the command `make` with the makefile in the github. Please ensure you have the appropriate dependencies installed on your machine prior to running. 
 
@@ -28,8 +29,8 @@ In terms of parameter choices, I orginally had manual control over `T0`, the num
 
 **Other Optimizatons & Changes:**
 
-* `deltaDist` was changed in the TwoOpt formula from being calculated by recalculating the distance before and after the reversal, now it only caculates the needed changes and returns, which is a O(N) -> O(1) optimization! 
-* deprecatated `simulatedAnnealingCitySwap` entirely due to inneficiency and a lack of being able to achieve better solutions that `simulatedAnnealingTwoOpt`.
+* `deltaDist` was changed in the TwoOpt formula from being calculated by recalculating the distance before and after the reversal to only calculating the specific distances needed to find the delta. This edit resulted in a O(N) -> O(1) optimization! 
+* Deprecatated `simulatedAnnealingCitySwap` entirely due to inneficiency and a lack of being able to achieve better solutions that `simulatedAnnealingTwoOpt`.
 
 *be advised* this program can be halted in the middle of execution by using the usual ctrl ^C command, however, it will wait until the current iteration of annealing is done before terminating.
 
@@ -39,3 +40,5 @@ In terms of parameter choices, I orginally had manual control over `T0`, the num
 
 **cities2k** 10187600.0km 286906.0km 285.61s
 
+--------------------------------------------
+**Disclaimer:** chatGPT was used in the development of this program in a similar manner to the traditional Google search or Stack Overflow query. That is, of course, for edits and assistance with syntax, coding convetions, c/cpp standard functions, etc. Except where otherwise noted, it was not used for the development of original thoughts or algorithmic code. All of my code can be explained thoroughly by me if necessary. 
