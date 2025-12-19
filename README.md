@@ -1,7 +1,4 @@
-Starter code and data for traveling salesman problem
-
-
-Files in this directory:
+**Skeleton Code Provided by Robert Hirosky, PhD**
 
 * datareader.cpp : example code to read in the data files (use Makefile)
 * datareader.py  : example code to read in the data files
